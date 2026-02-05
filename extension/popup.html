@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Knowledge Engine</title>
+  <style>
+    body {
+      width: 400px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0 0 16px 0;
+      color: #1a1a1a;
+    }
+
+    .page-info {
+      background: #f5f5f5;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .page-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+      color: #333;
+    }
+
+    .page-url {
+      font-size: 12px;
+      color: #666;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #45a049;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .pdf-button {
+      background: #2196F3;
+    }
+
+    .pdf-button:hover {
+      background: #0b7dda;
+    }
+
+    #file-input {
+      display: none;
+    }
+
+    .status {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status.processing {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #856404;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .recent {
+      border-top: 1px solid #e0e0e0;
+      padding-top: 12px;
+    }
+
+    .recent h2 {
+      font-size: 13px;
+      margin: 0 0 8px 0;
+      color: #666;
+      font-weight: 600;
+    }
+
+    .recent-item {
+      font-size: 12px;
+      color: #333;
+      padding: 6px;
+      margin-bottom: 4px;
+      background: #fafafa;
+      border-radius: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .settings {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e0e0e0;
+      font-size: 12px;
+    }
+
+    .settings label {
+      display: block;
+      margin-bottom: 4px;
+      color: #666;
+      font-weight: 500;
+    }
+
+    .settings input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+      box-sizing: border-box;
+    }
+
+    .server-status {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-left: 8px;
+    }
+
+    .server-status.online {
+      background: #4CAF50;
+    }
+
+    .server-status.offline {
+      background: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <h1>
+    Knowledge Engine
+    <span id="server-status" class="server-status offline"></span>
+  </h1>
+
+  <div id="status-message" class="status"></div>
+
+  <div class="page-info">
+    <div class="page-title" id="page-title">Loading...</div>
+    <div class="page-url" id="page-url"></div>
+  </div>
+
+  <div class="actions">
+    <button id="save-btn">Save Current Page</button>
+    <button id="pdf-btn" class="pdf-button">Upload PDF</button>
+    <input type="file" id="file-input" accept=".pdf">
+  </div>
+
+  <div class="recent">
+    <h2>Recent Saves</h2>
+    <div id="recent-list"></div>
+  </div>
+
+  <div class="settings">
+    <label>Server URL</label>
+    <input type="text" id="server-url" value="http://localhost:8284" />
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

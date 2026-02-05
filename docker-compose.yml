@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  letta:
+    image: lettaai/letta:latest
+    ports:
+      - "8283:8283"
+    environment:
+      - LETTA_BASE_URL=http://localhost:8283
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - letta_data:/root/.letta
+    command: letta server
+
+volumes:
+  letta_data:
