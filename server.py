@@ -15,6 +15,8 @@ from pydantic import BaseModel
 import uvicorn
 
 from agent import KnowledgeAgent
+from fastapi.staticfiles import StaticFiles
+from dashboard.routes import router as dashboard_router
 
 
 app = FastAPI(title="Knowledge Engine API", version="1.0.0")
@@ -32,6 +34,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Mount static files for dashboard
+static_path = Path(__file__).parent / "dashboard" / "static"
+if static_path.exists():
+    app.mount("/dashboard/static", StaticFiles(directory=str(static_path)), name="static")
+
+# Mount dashboard routes
+app.include_router(dashboard_router)
 
 # Initialize agent
 agent = KnowledgeAgent()

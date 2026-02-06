@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Engine - Dashboard</title>
+    <link rel="stylesheet" href="/dashboard/static/css/dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Left: Theme navigation and search -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="app-title">Knowledge Engine</h1>
+            </div>
+
+            <div class="search-box">
+                <input
+                    type="text"
+                    id="search-input"
+                    placeholder="Search insights..."
+                    class="search-input"
+                >
+                <button id="search-clear" class="search-clear" title="Clear search">✕</button>
+            </div>
+
+            <div class="themes-section">
+                <h2 class="section-title">Themes</h2>
+                <div id="theme-nav" class="theme-list"></div>
+            </div>
+
+            <div class="actions-section">
+                <button id="refresh-btn" class="btn-refresh">
+                    <span class="btn-icon">↻</span>
+                    Refresh Vault
+                </button>
+                <div id="refresh-status" class="refresh-status"></div>
+            </div>
+
+            <div class="sidebar-footer">
+                <p class="stats">
+                    <span id="total-insights">0</span> insights
+                </p>
+            </div>
+        </aside>
+
+        <!-- Center: Graph visualization -->
+        <main class="graph-container">
+            <div class="graph-header">
+                <div class="view-controls">
+                    <button id="zoom-in" class="btn-control" title="Zoom in">+</button>
+                    <button id="zoom-out" class="btn-control" title="Zoom out">−</button>
+                    <button id="reset-view" class="btn-control" title="Reset view">⊙</button>
+                </div>
+                <div id="graph-stats" class="graph-stats"></div>
+            </div>
+            <svg id="knowledge-graph"></svg>
+            <div id="graph-loading" class="loading-indicator">
+                <div class="spinner"></div>
+                <p>Loading knowledge graph...</p>
+            </div>
+        </main>
+
+        <!-- Right: Insight viewer -->
+        <section class="viewer">
+            <div class="viewer-empty">
+                <p>Select an insight to view details</p>
+            </div>
+
+            <div id="insight-detail" class="insight-detail" style="display: none;">
+                <div class="insight-header">
+                    <h2 id="insight-title" class="insight-title"></h2>
+                    <button id="close-insight" class="btn-close" title="Close">✕</button>
+                </div>
+
+                <div class="insight-metadata">
+                    <div class="metadata-row">
+                        <span class="metadata-label">Theme</span>
+                        <span id="insight-theme" class="metadata-value"></span>
+                    </div>
+                    <div class="metadata-row">
+                        <span class="metadata-label">Novelty</span>
+                        <div class="novelty-display">
+                            <span id="insight-novelty-stars" class="novelty-stars"></span>
+                            <span id="insight-novelty-score" class="novelty-score"></span>
+                        </div>
+                    </div>
+                    <div class="metadata-row">
+                        <span class="metadata-label">Date</span>
+                        <span id="insight-date" class="metadata-value"></span>
+                    </div>
+                    <div class="metadata-row" id="source-row">
+                        <span class="metadata-label">Source</span>
+                        <span id="insight-source" class="metadata-value"></span>
+                    </div>
+                </div>
+
+                <div id="insight-concepts" class="concepts-section" style="display: none;">
+                    <h3 class="section-title">Concepts</h3>
+                    <div id="concepts-list" class="tag-list"></div>
+                </div>
+
+                <div id="insight-tags" class="tags-section" style="display: none;">
+                    <h3 class="section-title">Tags</h3>
+                    <div id="tags-list" class="tag-list"></div>
+                </div>
+
+                <div class="insight-actions">
+                    <button id="copy-link" class="btn-secondary" title="Copy link">
+                        <span class="btn-icon">🔗</span>
+                        Copy Link
+                    </button>
+                    <button id="open-vault" class="btn-secondary" title="Open in vault">
+                        <span class="btn-icon">📁</span>
+                        Open in Vault
+                    </button>
+                </div>
+
+                <div id="insight-content" class="insight-content"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/dashboard/static/js/graph.js"></script>
+    <script src="/dashboard/static/js/sidebar.js"></script>
+    <script src="/dashboard/static/js/viewer.js"></script>
+    <script src="/dashboard/static/js/main.js"></script>
+</body>
+</html>
