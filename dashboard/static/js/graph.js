@@ -164,6 +164,8 @@ class KnowledgeGraph {
     }
 
     highlightSearchResults(nodeIds) {
+        console.log('Highlighting search results:', nodeIds);
+
         // Reset all nodes first
         this.nodesGroup.selectAll('circle.node-circle')
             .style('stroke-width', 2)
@@ -173,6 +175,7 @@ class KnowledgeGraph {
         // Highlight matching nodes by iterating through nodeIds
         nodeIds.forEach(nodeId => {
             const nodeElement = this.svg.select(`#node-${nodeId}`);
+            console.log(`Looking for node #node-${nodeId}, found: ${!nodeElement.empty()}`);
             if (!nodeElement.empty()) {
                 nodeElement.select('circle.node-circle')
                     .style('stroke-width', 4)
