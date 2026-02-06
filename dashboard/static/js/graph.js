@@ -15,6 +15,7 @@ class KnowledgeGraph {
         this.currentTheme = null;
         this.highlightedNode = null;
         this.nodeClickCallback = null;
+        this.zoomBehavior = null;
 
         this.createSvgElements();
         this.setupZoom();
@@ -31,10 +32,10 @@ class KnowledgeGraph {
     }
 
     setupZoom() {
-        const zoom = d3.zoom().on('zoom', (event) => {
+        this.zoomBehavior = d3.zoom().on('zoom', (event) => {
             this.mainGroup.attr('transform', event.transform);
         }).scaleExtent([0.5, 5]);
-        this.svg.call(zoom);
+        this.svg.call(this.zoomBehavior);
     }
 
     render(graphData, options = {}) {

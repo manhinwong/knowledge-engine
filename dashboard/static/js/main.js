@@ -63,11 +63,11 @@ class KnowledgeEngineApp {
         });
 
         document.getElementById('zoom-in').addEventListener('click', () => {
-            this.graph.svg.transition().duration(300).call(d3.zoom().scaleBy, 1.3);
+            this.graph.svg.transition().duration(300).call(this.graph.zoomBehavior.scaleBy, 1.3);
         });
 
         document.getElementById('zoom-out').addEventListener('click', () => {
-            this.graph.svg.transition().duration(300).call(d3.zoom().scaleBy, 0.77);
+            this.graph.svg.transition().duration(300).call(this.graph.zoomBehavior.scaleBy, 0.77);
         });
 
         document.getElementById('reset-view').addEventListener('click', () => {
