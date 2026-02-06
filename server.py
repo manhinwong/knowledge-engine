@@ -300,9 +300,11 @@ No insights yet.
 
 def main():
     """Run the server."""
-    print("Starting Knowledge Engine API server on http://localhost:8284")
+    port = int(os.environ.get("PORT", 8284))
+    host = "0.0.0.0"  # Listen on all interfaces for Railway/production
+    print(f"Starting Knowledge Engine API server on http://0.0.0.0:{port}")
     print("Press Ctrl+C to stop")
-    uvicorn.run(app, host="127.0.0.1", port=8284, log_level="info")
+    uvicorn.run(app, host=host, port=port, log_level="info")
 
 
 if __name__ == "__main__":
