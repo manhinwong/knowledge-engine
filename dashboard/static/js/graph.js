@@ -48,6 +48,19 @@ class KnowledgeGraph {
             type: d.type
         }));
 
+        // Calculate connection count for each node
+        const connectionCount = {};
+        this.nodes.forEach(node => {
+            connectionCount[node.id] = 0;
+        });
+        this.links.forEach(link => {
+            connectionCount[link.source]++;
+            connectionCount[link.target]++;
+        });
+        this.nodes.forEach(node => {
+            node.connections = connectionCount[node.id] || 0;
+        });
+
         this.simulation = d3.forceSimulation(this.nodes)
             .force('link', d3.forceLink(this.links).id(d => d.id).distance(120).strength(0.3))
             .force('charge', d3.forceManyBody().strength(-400).distanceMax(500))
@@ -79,7 +92,11 @@ class KnowledgeGraph {
         const nodes = this.nodesGroup.selectAll('g.node').data(this.nodes, d => d.id)
             .join(enter => enter.append('g').attr('class', 'node').attr('id', d => `node-${d.id}`), update => update, exit => exit.remove());
         nodes.append('circle').attr('class', 'node-circle').attr('r', d => this.getNodeRadius(d))
-            .attr('fill', d => d.color || '#3b82f6').attr('stroke', '#ffffff').attr('stroke-width', 2)
+            .attr('fill', d => d.color || '#3b82f6')
+            .attr('stroke', d => d.connections === 0 ? '#cbd5e1' : '#ffffff')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', d => d.connections === 0 ? '4,4' : '0')
+            .attr('opacity', d => d.connections === 0 ? 0.6 : 1)
             .style('cursor', 'pointer')
             .on('click', (e, d) => this.onNodeClick(d))
             .on('mouseenter', (e, d) => this.onNodeHover(d, true))
@@ -117,7 +134,8 @@ class KnowledgeGraph {
     onNodeHover(node, isHovering) {
         if (isHovering) {
             const tooltip = document.querySelector('.tooltip') || this.createTooltip();
-            tooltip.innerHTML = `<strong>${node.label}</strong><br>${node.theme}<br>Novelty: ${node.novelty_score.toFixed(2)}`;
+            const connectionText = node.connections === 0 ? 'Orphaned (0 connections)' : `${node.connections} connections`;
+            tooltip.innerHTML = `<strong>${node.label}</strong><br>${node.theme}<br>Connections: ${connectionText}<br>Novelty: ${node.novelty_score.toFixed(2)}`;
             tooltip.style.display = 'block';
         }
     }
@@ -130,8 +148,13 @@ class KnowledgeGraph {
     }
 
     getNodeRadius(node) {
-        const score = Math.max(0.5, Math.min(1.0, node.novelty_score || 0.5));
-        return 5 + (score - 0.5) * 20;
+        // Size based on number of connections (development level)
+        // More connections = larger node = well-developed topic
+        const connections = node.connections || 0;
+        const baseRadius = 6;
+        const maxRadius = 25;
+        const radius = baseRadius + Math.min(connections, 15) * (maxRadius - baseRadius) / 15;
+        return radius;
     }
 
     truncateLabel(text, length) {
