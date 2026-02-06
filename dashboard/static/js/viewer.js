@@ -64,14 +64,14 @@ class InsightViewer {
         
         if (insight.source_url && insight.source_url !== 'local-pdf' && insight.source_url !== 'unknown') {
             this.sourceRowEl.style.display = 'flex';
+            this.sourceEl.innerHTML = '';
             const sourceLink = document.createElement('a');
             sourceLink.href = insight.source_url;
             sourceLink.target = '_blank';
             sourceLink.textContent = 'View Source';
-            sourceLink.className = 'metadata-value';
             sourceLink.style.color = '#3b82f6';
             sourceLink.style.textDecoration = 'underline';
-            this.sourceEl.replaceWith(sourceLink);
+            this.sourceEl.appendChild(sourceLink);
         } else {
             this.sourceRowEl.style.display = 'none';
         }
