@@ -179,7 +179,7 @@ class KnowledgeGraph {
             console.log(`Looking for node #node-${nodeId}, found: ${!nodeElement.empty()}`);
             if (!nodeElement.empty()) {
                 nodeElement.select('circle.node-circle')
-                    .attr('stroke-width', 8)
+                    .attr('stroke-width', 20)
                     .attr('stroke', '#ffd700')
                     .attr('r', d => this.getNodeRadius(d) + 6)
                     .attr('opacity', 1)
