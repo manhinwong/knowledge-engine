@@ -17,7 +17,6 @@ class InsightViewer {
         this.contentEl = document.getElementById('insight-content');
         this.closeBtn = document.getElementById('close-insight');
         this.copyLinkBtn = document.getElementById('copy-link');
-        this.openVaultBtn = document.getElementById('open-vault');
         this.currentInsight = null;
         this.setupEventListeners();
     }
@@ -31,12 +30,6 @@ class InsightViewer {
                 const original = this.copyLinkBtn.textContent;
                 this.copyLinkBtn.textContent = '✓ Copied';
                 setTimeout(() => { this.copyLinkBtn.textContent = original; }, 2000);
-            }
-        });
-        this.openVaultBtn.addEventListener('click', () => {
-            if (this.currentInsight) {
-                const path = this.currentInsight.filepath || this.currentInsight.filename;
-                window.location.href = `obsidian://open?path=${encodeURIComponent(path)}`;
             }
         });
     }
