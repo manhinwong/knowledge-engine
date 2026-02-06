@@ -164,11 +164,11 @@ class KnowledgeGraph {
     }
 
     highlightSearchResults(nodeIds) {
-        if (this.nodeElements) {
-            this.nodeElements.selectAll('circle')
-                .style('stroke-width', d => nodeIds.includes(d.id) ? 3 : 2)
-                .style('filter', d => nodeIds.includes(d.id) ? 'brightness(1.2)' : 'none');
-        }
+        // Select all node circles directly and highlight matching results
+        this.nodesGroup.selectAll('circle.node-circle')
+            .style('stroke-width', d => nodeIds.includes(d.id) ? 4 : 2)
+            .style('stroke', d => nodeIds.includes(d.id) ? '#fbbf24' : '#ffffff')
+            .style('filter', d => nodeIds.includes(d.id) ? 'brightness(1.3) drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))' : 'none');
     }
 
     resetView() {
