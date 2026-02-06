@@ -43,7 +43,7 @@ class KnowledgeAgent:
             "memory": {
                 "user_profile": "Marcus Wong, VC/AI Investor",
                 "active_themes": ["AI Infrastructure Moats", "VC Pattern Recognition",
-                                 "Enterprise AI Adoption", "Agentic Systems"],
+                                 "Enterprise AI Adoption", "Startup Relationships", "ECON 157"],
                 "known_concepts_count": 0,
                 "readings": []
             }

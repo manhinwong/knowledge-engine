@@ -12,26 +12,18 @@ import frontmatter
 class VaultParser:
     """Parse Knowledge Vault markdown files and build graph structure."""
 
-    THEME_MAPPING = {
-        "01-AI-Infrastructure-Moats": "AI Infrastructure Moats",
-        "02-VC-Pattern-Recognition": "VC Pattern Recognition",
-        "03-Enterprise-AI-Adoption": "Enterprise AI Adoption",
-        "04-Agentic-Systems": "Agentic Systems",
-        "05-Cross-Theme-Synthesis": "Cross-Theme Synthesis",
-        "06-ECON-157": "ECON 157",
-        "Sources": "Sources"
-    }
-
-    # Theme colors for frontend
-    THEME_COLORS = {
-        "AI Infrastructure Moats": "#3b82f6",  # Blue
-        "VC Pattern Recognition": "#10b981",   # Green
-        "Enterprise AI Adoption": "#f97316",   # Orange
-        "Agentic Systems": "#8b5cf6",          # Purple
-        "Cross-Theme Synthesis": "#6366f1",    # Indigo
-        "ECON 157": "#ec4899",                 # Pink
-        "Sources": "#64748b"                   # Slate
-    }
+    # Default theme colors (can be extended as new themes are created)
+    DEFAULT_COLORS = [
+        "#3b82f6",  # Blue
+        "#10b981",  # Green
+        "#f97316",  # Orange
+        "#8b5cf6",  # Purple
+        "#6366f1",  # Indigo
+        "#ec4899",  # Pink
+        "#06b6d4",  # Cyan
+        "#f59e0b",  # Amber
+        "#84cc16",  # Lime
+    ]
 
     def __init__(self, vault_path: str, cache_ttl_seconds: int = 300):
         """
@@ -46,6 +38,56 @@ class VaultParser:
         self.cache = None
         self.cache_time = None
         self.file_index = {}  # filename -> full_path mapping
+        self._theme_mapping = None
+        self._theme_colors = None
+
+    def _discover_themes(self):
+        """Discover themes from vault folder structure."""
+        if self._theme_mapping is not None:
+            return self._theme_mapping, self._theme_colors
+
+        mapping = {}
+        colors = {}
+        color_idx = 0
+
+        # Look for numbered folders that contain _INDEX.md
+        try:
+            for folder in sorted(self.vault_path.iterdir()):
+                if not folder.is_dir() or folder.name.startswith('.'):
+                    continue
+
+                index_file = folder / "_INDEX.md"
+                if index_file.exists():
+                    # Extract theme name from folder name
+                    folder_name = folder.name
+                    # Pattern: NN-Theme-Name -> Theme Name
+                    if folder_name[0].isdigit():
+                        theme_name = folder_name.split('-', 1)[1].replace('-', ' ')
+                    else:
+                        theme_name = folder_name.replace('-', ' ')
+
+                    mapping[folder_name] = theme_name
+
+                    # Assign color
+                    color = self.DEFAULT_COLORS[color_idx % len(self.DEFAULT_COLORS)]
+                    colors[theme_name] = color
+                    color_idx += 1
+        except Exception as e:
+            print(f"Error discovering themes: {e}")
+
+        self._theme_mapping = mapping
+        self._theme_colors = colors
+        return mapping, colors
+
+    def get_theme_mapping(self):
+        """Get folder name -> theme name mapping."""
+        mapping, _ = self._discover_themes()
+        return mapping
+
+    def get_theme_colors(self):
+        """Get theme name -> color mapping."""
+        _, colors = self._discover_themes()
+        return colors
 
     def parse_vault(self) -> Dict:
         """
@@ -85,17 +127,23 @@ class VaultParser:
         edges = []
         wikilinks_found = {}  # Track all wikilinks for orphan detection
 
+        # Get dynamic theme colors
+        theme_colors = self.get_theme_colors()
+
         for doc_id, doc_data in documents.items():
             # Create node
             themes = doc_data['frontmatter'].get('themes', [])
             primary_theme = themes[0] if themes else "Other"
+
+            # Default color for unknown themes
+            default_color = "#64748b"
 
             node = {
                 'id': doc_id,
                 'label': doc_data['frontmatter'].get('source_title', doc_id),
                 'type': 'insight',
                 'theme': primary_theme,
-                'color': self.THEME_COLORS.get(primary_theme, "#64748b"),
+                'color': theme_colors.get(primary_theme, default_color),
                 'novelty_score': doc_data['frontmatter'].get('novelty_score', 0.5),
                 'concepts': doc_data['frontmatter'].get('concepts', []),
                 'tags': doc_data['frontmatter'].get('tags', []),
@@ -298,10 +346,17 @@ class VaultParser:
         insights = self.get_insights()
         summary = {}
 
-        for theme, color in self.THEME_COLORS.items():
+        # Get dynamic theme colors
+        theme_colors = self.get_theme_colors()
+
+        # Collect all unique themes from insights
+        all_themes = set(i['theme'] for i in insights)
+
+        for theme in sorted(all_themes):
             theme_insights = [i for i in insights if i['theme'] == theme]
             if theme_insights:
                 latest = max(insight['date_added'] for insight in theme_insights)
+                color = theme_colors.get(theme, "#64748b")
                 summary[theme] = {
                     'count': len(theme_insights),
                     'latest_date': latest,

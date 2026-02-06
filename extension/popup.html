@@ -184,6 +184,66 @@
     .server-status.offline {
       background: #f44336;
     }
+
+    .theme-selector {
+      background: #f9f9f9;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      border: 1px solid #eee;
+    }
+
+    .theme-selector label {
+      display: block;
+      font-weight: 500;
+      font-size: 13px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    #theme-select {
+      flex: 1;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+      background: white;
+      cursor: pointer;
+    }
+
+    #new-theme-btn {
+      padding: 8px 12px;
+      background: #2196F3;
+      flex: 0;
+      width: auto;
+    }
+
+    #new-theme-btn:hover {
+      background: #0b7dda;
+    }
+
+    #new-theme-name {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    #create-theme-btn {
+      background: #4CAF50;
+    }
+
+    #create-theme-btn:hover {
+      background: #45a049;
+    }
+
+    #cancel-theme-btn:hover {
+      background: #888;
+    }
   </style>
 </head>
 <body>
@@ -197,6 +257,23 @@
   <div class="page-info">
     <div class="page-title" id="page-title">Loading...</div>
     <div class="page-url" id="page-url"></div>
+  </div>
+
+  <div class="theme-selector">
+    <label for="theme-select">Theme</label>
+    <div style="display: flex; gap: 8px;">
+      <select id="theme-select">
+        <option value="">Loading themes...</option>
+      </select>
+      <button id="new-theme-btn" title="Create new theme">+</button>
+    </div>
+    <div id="new-theme-input" style="display: none; margin-top: 8px;">
+      <input type="text" id="new-theme-name" placeholder="Theme name (e.g., Research Notes)" />
+      <div style="display: flex; gap: 8px; margin-top: 8px;">
+        <button id="create-theme-btn" style="flex: 1;">Create</button>
+        <button id="cancel-theme-btn" style="flex: 1; background: #999;">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <div class="actions">

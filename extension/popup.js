@@ -9,9 +9,16 @@ const serverStatus = document.getElementById('server-status');
 const pageTitleEl = document.getElementById('page-title');
 const pageUrlEl = document.getElementById('page-url');
 const recentList = document.getElementById('recent-list');
+const themeSelect = document.getElementById('theme-select');
+const newThemeBtn = document.getElementById('new-theme-btn');
+const newThemeInput = document.getElementById('new-theme-input');
+const newThemeName = document.getElementById('new-theme-name');
+const createThemeBtn = document.getElementById('create-theme-btn');
+const cancelThemeBtn = document.getElementById('cancel-theme-btn');
 
 let currentTab = null;
 let serverUrl = 'http://localhost:8284';
+let availableThemes = [];
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -45,8 +52,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     pageUrlEl.title = currentTab.url || '';
   }
 
-  // Check server health
+  // Check server health and load themes
   checkServerHealth();
+  loadThemes();
 });
 
 // Save server URL when changed
@@ -79,9 +87,110 @@ async function checkServerHealth() {
   }
 }
 
+// Load available themes
+async function loadThemes() {
+  try {
+    const response = await fetch(`${serverUrl}/api/vault/themes`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      availableThemes = Object.keys(data);
+
+      // Populate dropdown
+      themeSelect.innerHTML = '';
+      availableThemes.forEach(theme => {
+        const option = document.createElement('option');
+        option.value = theme;
+        option.textContent = theme;
+        themeSelect.appendChild(option);
+      });
+
+      // Load selected theme from storage
+      const stored = await chrome.storage.local.get(['selectedTheme']);
+      if (stored.selectedTheme && availableThemes.includes(stored.selectedTheme)) {
+        themeSelect.value = stored.selectedTheme;
+      } else if (availableThemes.length > 0) {
+        themeSelect.value = availableThemes[0];
+      }
+    } else {
+      themeSelect.innerHTML = '<option value="">Error loading themes</option>';
+    }
+  } catch (error) {
+    console.error('Error loading themes:', error);
+    themeSelect.innerHTML = '<option value="">Error loading themes</option>';
+  }
+}
+
+// Theme selection handler
+themeSelect.addEventListener('change', async () => {
+  const selected = themeSelect.value;
+  if (selected) {
+    await chrome.storage.local.set({ selectedTheme: selected });
+  }
+});
+
+// New theme button handlers
+newThemeBtn.addEventListener('click', () => {
+  newThemeInput.style.display = 'block';
+  newThemeName.focus();
+  newThemeName.value = '';
+});
+
+cancelThemeBtn.addEventListener('click', () => {
+  newThemeInput.style.display = 'none';
+  newThemeName.value = '';
+});
+
+createThemeBtn.addEventListener('click', async () => {
+  const themeName = newThemeName.value.trim();
+  if (!themeName) {
+    showStatus('Please enter a theme name', 'error');
+    return;
+  }
+
+  try {
+    // Create theme by attempting to save to it
+    const response = await fetch(`${serverUrl}/create-theme`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ theme_name: themeName })
+    });
+
+    if (response.ok) {
+      showStatus(`Theme "${themeName}" created!`, 'success');
+      newThemeInput.style.display = 'none';
+      newThemeName.value = '';
+
+      // Reload themes
+      setTimeout(() => loadThemes(), 500);
+    } else {
+      const error = await response.json();
+      showStatus(`Error: ${error.detail || 'Failed to create theme'}`, 'error');
+    }
+  } catch (error) {
+    showStatus(`Error: ${error.message}`, 'error');
+  }
+});
+
+// Handle Enter key in theme name input
+newThemeName.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    createThemeBtn.click();
+  }
+});
+
 // Save current page
 saveBtn.addEventListener('click', async () => {
   if (!currentTab) return;
+
+  const selectedTheme = themeSelect.value;
+  if (!selectedTheme) {
+    showStatus('Please select a theme', 'error');
+    return;
+  }
 
   showStatus('Processing article...', 'processing');
   saveBtn.disabled = true;
@@ -100,6 +209,7 @@ saveBtn.addEventListener('click', async () => {
         body: JSON.stringify({
           type: 'html',
           content: response.content,
+          theme: selectedTheme,
           metadata: {
             title: response.title || currentTab.title,
             url: currentTab.url,
@@ -115,7 +225,8 @@ saveBtn.addEventListener('click', async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'url',
-          content: currentTab.url
+          content: currentTab.url,
+          theme: selectedTheme
         })
       });
     }
@@ -156,12 +267,20 @@ fileInput.addEventListener('change', async (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
+  const selectedTheme = themeSelect.value;
+  if (!selectedTheme) {
+    showStatus('Please select a theme', 'error');
+    fileInput.value = '';
+    return;
+  }
+
   showStatus('Processing PDF...', 'processing');
   pdfBtn.disabled = true;
 
   try {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('theme', selectedTheme);
 
     const response = await fetch(`${serverUrl}/upload-pdf`, {
       method: 'POST',
