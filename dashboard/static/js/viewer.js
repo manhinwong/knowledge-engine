@@ -35,7 +35,8 @@ class InsightViewer {
         });
         this.openVaultBtn.addEventListener('click', () => {
             if (this.currentInsight) {
-                window.location.href = `obsidian://open?path=${this.currentInsight.filename}`;
+                const path = this.currentInsight.filepath || this.currentInsight.filename;
+                window.location.href = `obsidian://open?path=${encodeURIComponent(path)}`;
             }
         });
     }

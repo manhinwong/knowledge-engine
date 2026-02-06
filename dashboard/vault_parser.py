@@ -18,6 +18,7 @@ class VaultParser:
         "03-Enterprise-AI-Adoption": "Enterprise AI Adoption",
         "04-Agentic-Systems": "Agentic Systems",
         "05-Cross-Theme-Synthesis": "Cross-Theme Synthesis",
+        "06-ECON-157": "ECON 157",
         "Sources": "Sources"
     }
 
@@ -28,6 +29,7 @@ class VaultParser:
         "Enterprise AI Adoption": "#f97316",   # Orange
         "Agentic Systems": "#8b5cf6",          # Purple
         "Cross-Theme Synthesis": "#6366f1",    # Indigo
+        "ECON 157": "#ec4899",                 # Pink
         "Sources": "#64748b"                   # Slate
     }
 
@@ -271,6 +273,7 @@ class VaultParser:
                 return {
                     'id': doc_id,
                     'filename': file_path.name,
+                    'filepath': str(file_path.absolute()),
                     'frontmatter': doc.metadata,
                     'content': doc.content,
                     'theme': doc.metadata.get('themes', ['Other'])[0],
