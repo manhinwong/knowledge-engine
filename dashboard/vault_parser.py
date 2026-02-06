@@ -189,6 +189,10 @@ class VaultParser:
         Returns:
             Dict with 'id' and 'path', or None if not found
         """
+        # Ensure file index is built
+        if not self.file_index:
+            self._index_files()
+
         # Remove any display text (shouldn't happen if called from extract_wikilinks)
         link = link.split('|')[0].strip()
 
@@ -251,6 +255,10 @@ class VaultParser:
         Returns:
             Dict with all metadata and content, or None if not found
         """
+        # Ensure file index is built
+        if not self.file_index:
+            self._index_files()
+
         if doc_id not in self.file_index:
             return None
 
@@ -312,6 +320,10 @@ class VaultParser:
         Returns:
             List of matching insights
         """
+        # Ensure file index is built
+        if not self.file_index:
+            self._index_files()
+
         query_lower = query.lower()
         insights = self.get_insights(theme=theme)
         results = []
