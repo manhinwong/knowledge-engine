@@ -168,9 +168,9 @@ class KnowledgeGraph {
 
         // Reset all nodes first
         this.nodesGroup.selectAll('circle.node-circle')
-            .style('stroke-width', 2)
-            .style('stroke', '#ffffff')
-            .style('filter', 'none');
+            .attr('stroke-width', 2)
+            .attr('stroke', '#ffffff')
+            .attr('r', d => this.getNodeRadius(d));
 
         // Highlight matching nodes by iterating through nodeIds
         nodeIds.forEach(nodeId => {
@@ -178,9 +178,9 @@ class KnowledgeGraph {
             console.log(`Looking for node #node-${nodeId}, found: ${!nodeElement.empty()}`);
             if (!nodeElement.empty()) {
                 nodeElement.select('circle.node-circle')
-                    .style('stroke-width', 4)
-                    .style('stroke', '#fbbf24')
-                    .style('filter', 'brightness(1.3) drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))');
+                    .attr('stroke-width', 5)
+                    .attr('stroke', '#fbbf24')
+                    .attr('r', d => this.getNodeRadius(d) + 3);
             }
         });
     }
