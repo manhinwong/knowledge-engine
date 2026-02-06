@@ -164,11 +164,22 @@ class KnowledgeGraph {
     }
 
     highlightSearchResults(nodeIds) {
-        // Select all node circles directly and highlight matching results
+        // Reset all nodes first
         this.nodesGroup.selectAll('circle.node-circle')
-            .style('stroke-width', d => nodeIds.includes(d.id) ? 4 : 2)
-            .style('stroke', d => nodeIds.includes(d.id) ? '#fbbf24' : '#ffffff')
-            .style('filter', d => nodeIds.includes(d.id) ? 'brightness(1.3) drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))' : 'none');
+            .style('stroke-width', 2)
+            .style('stroke', '#ffffff')
+            .style('filter', 'none');
+
+        // Highlight matching nodes by iterating through nodeIds
+        nodeIds.forEach(nodeId => {
+            const nodeElement = this.svg.select(`#node-${nodeId}`);
+            if (!nodeElement.empty()) {
+                nodeElement.select('circle.node-circle')
+                    .style('stroke-width', 4)
+                    .style('stroke', '#fbbf24')
+                    .style('filter', 'brightness(1.3) drop-shadow(0 0 8px rgba(251, 191, 36, 0.6))');
+            }
+        });
     }
 
     resetView() {
