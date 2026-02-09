@@ -8,4 +8,3 @@ __pycache__/
 .dockerignore
 Dockerfile
 fly.toml
-vercel.json

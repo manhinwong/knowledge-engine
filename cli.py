@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Knowledge Engine CLI - Interact with the Letta-powered knowledge accumulation agent.
+Knowledge Engine CLI - Interact with the knowledge accumulation agent.
 
 Usage:
     ke process <url>          Process article and extract unique insights
@@ -49,7 +49,7 @@ def send_message(message: str):
 
 @click.group()
 def cli():
-    """Knowledge Engine - Letta-powered learning assistant."""
+    """Knowledge Engine - AI-powered learning assistant."""
     pass
 
 
@@ -196,27 +196,6 @@ Save to Obsidian as a synthesis note in 05-Cross-Theme-Synthesis/ with:
 - Filename: YYYY-MM-DD-synthesis-{theme.lower().replace(' ', '-')}.md
 - Proper frontmatter with theme tags
 - Wikilinks to all referenced insights""")
-
-
-@cli.command()
-def status():
-    """Show agent status and memory stats."""
-    client = get_client()
-    agent_id = get_agent_id()
-
-    try:
-        agent = client.agents.get(agent_id)
-        click.echo(f"Agent: {agent.name}")
-        click.echo(f"ID: {agent.id}")
-        click.echo(f"Model: {agent.model}")
-
-        # Get memory stats
-        memory = client.agents.core_memory.get_block(agent_id, "known_concepts_summary")
-        click.echo(f"\nKnown Concepts Summary:")
-        click.echo(memory.value)
-
-    except Exception as e:
-        click.echo(f"Error: {e}", err=True)
 
 
 @cli.command()

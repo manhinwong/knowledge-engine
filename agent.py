@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-Simple agent implementation using Anthropic SDK directly.
-Replaces Letta with a cleaner, working solution.
+Knowledge Engine agent using Anthropic SDK with tool calling.
 """
 
 import json

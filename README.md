@@ -1,10 +1,10 @@
 # Knowledge Accumulation Engine
 
-A Letta-powered agent that extracts unique insights from articles, connects them to learning themes, and outputs to an Obsidian vault.
+An AI-powered agent that extracts unique insights from articles, connects them to learning themes, and outputs to an Obsidian-style vault. Deployed on Fly.io.
 
 ## Quick Start
 
-### 1. Setup Python Environment
+### Local Development
 
 ```bash
 cd ~/knowledge-engine
@@ -13,67 +13,40 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Set API Keys
+Set your API key:
 
 ```bash
-export ANTHROPIC_API_KEY=your_key_here
-export OPENAI_API_KEY=your_key_here  # For embeddings
+cp .env.example .env
+# Edit .env with your ANTHROPIC_API_KEY and OBSIDIAN_VAULT_PATH
 ```
 
-### 3. Database and Letta Server
-
-The Letta server uses PostgreSQL and needs tables created once. **pgvector** is required; on Homebrew it only supports Postgres 17/18 (not 15).
-
-**If you use Postgres 15:** upgrade to 17, then recreate the letta DB:
+Run the server:
 
 ```bash
-brew install postgresql@17
-brew services stop postgresql@15   # if it was running
-brew services start postgresql@17
+python server.py
 ```
 
-**One-time setup:**
+### Production (Fly.io)
+
+The app is deployed at https://knowledge-engine.fly.dev
 
 ```bash
-# Create letta role and database (no psql needed)
-python scripts/setup_postgres_for_letta.py
-
-# Create Letta tables (requires pgvector; Postgres 17/18 on Homebrew)
-python scripts/init_letta_db.py
+fly deploy
 ```
 
-**Start the server** (loads `.env` so `LETTA_PG_URI` is used):
+## Chrome Extension
 
-```bash
-./run_server.sh
-```
+The browser extension lets you save articles directly to the knowledge engine.
 
-### 4. Create the Agent (in another terminal)
-
-```bash
-cd ~/knowledge-engine
-source venv/bin/activate
-python setup_agent.py
-```
-
-This will print an agent ID. Export it:
-
-```bash
-export KNOWLEDGE_ENGINE_AGENT_ID=<agent-id-from-setup>
-```
-
-### 5. Test
-
-```bash
-python cli.py themes
-```
+1. Go to `chrome://extensions/`
+2. Enable "Developer mode"
+3. Click "Load unpacked" and select the `extension/` folder
+4. Set the server URL in the extension settings
 
 ## CLI Commands
 
-### Automatic Article Processing
-
 ```bash
-# Process an article (auto-extracts insights)
+# Process an article
 python cli.py process "https://example.com/article"
 
 # Get explanation of a concept
@@ -94,36 +67,19 @@ python cli.py themes --theme "AI Infrastructure Moats"
 
 # Generate synthesis
 python cli.py synthesize "AI Infrastructure Moats"
-```
 
-### Manual Reading Entry (New)
-
-```bash
-# Add a reading with your own notes
+# Add a reading with notes
 python cli.py add "Article Title" "https://url.com" \
-    --notes "Your thoughts and reactions" \
+    --notes "Your thoughts" \
     --points "Key point 1" \
-    --points "Key point 2" \
     --themes "AI Infrastructure Moats"
 
-# Search for readings
+# Search readings
 python cli.py search "RAG systems"
-python cli.py search "network effects" --limit 5
 
-# Get a specific reading by ID
+# Get a specific reading
 python cli.py get reading-20260127-contextual-retrieval
 ```
-
-## Shell Alias (Optional)
-
-Add to `~/.zshrc`:
-
-```bash
-alias ke="python ~/knowledge-engine/cli.py"
-export KNOWLEDGE_ENGINE_AGENT_ID=<your-agent-id>
-```
-
-Then use: `ke process <url>`
 
 ## Learning Themes
 
@@ -132,10 +88,18 @@ Then use: `ke process <url>`
 3. **Enterprise AI Adoption** - How context graphs/agents get adopted in orgs
 4. **Agentic Systems Architecture** - MCP, state management, memory systems
 
-## Obsidian Vault Structure
+## Architecture
+
+- **Agent** (`agent.py`) — Anthropic SDK with tool calling for processing articles
+- **Server** (`server.py`) — FastAPI REST API for the Chrome extension and dashboard
+- **Dashboard** (`dashboard/`) — Web UI with knowledge graph visualization
+- **Tools** (`tools/`) — Article fetching, PDF parsing, Obsidian vault operations
+- **Extension** (`extension/`) — Chrome extension for saving articles
+
+## Vault Structure
 
 ```
-~/Documents/KnowledgeVault/
+/data/vault/  (Fly.io) or ~/Documents/KnowledgeVault/ (local)
 ├── 01-AI-Infrastructure-Moats/
 ├── 02-VC-Pattern-Recognition/
 ├── 03-Enterprise-AI-Adoption/
@@ -147,13 +111,3 @@ Then use: `ke process <url>`
 Each theme folder contains:
 - `_INDEX.md` - Map of Content linking all insights
 - Individual insight files with frontmatter and wikilinks
-
-## How It Works
-
-1. **Novelty Detection**: Before saving any insight, the agent searches its archival memory for similar concepts. Only genuinely novel insights (novelty_score > 0.5) are saved.
-
-2. **Theme Mapping**: Each insight is mapped to relevant learning themes and connected via wikilinks.
-
-3. **Compounding Knowledge**: The agent updates its `known_concepts_summary` after each article, building a personalized filter for what's truly new to you.
-
-4. **Obsidian Integration**: Insights are saved as markdown files with YAML frontmatter, enabling Obsidian's graph view and backlink features.
