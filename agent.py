@@ -20,8 +20,9 @@ with open(PROMPT_PATH, "r") as f:
     SYSTEM_PROMPT = f.read()
 
 # State file
-STATE_FILE = Path.home() / ".knowledge-engine" / "state.json"
-STATE_FILE.parent.mkdir(exist_ok=True)
+_state_dir = Path(os.environ.get("KNOWLEDGE_ENGINE_STATE_DIR", str(Path.home() / ".knowledge-engine")))
+_state_dir.mkdir(parents=True, exist_ok=True)
+STATE_FILE = _state_dir / "state.json"
 
 
 class KnowledgeAgent:

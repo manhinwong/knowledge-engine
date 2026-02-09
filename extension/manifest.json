@@ -29,6 +29,8 @@
   ],
   "host_permissions": [
     "http://localhost:8284/*",
-    "http://127.0.0.1:8284/*"
+    "http://127.0.0.1:8284/*",
+    "https://knowledge-engine.fly.dev/*",
+    "https://*.fly.dev/*"
   ]
 }

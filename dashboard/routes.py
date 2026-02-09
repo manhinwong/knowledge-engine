@@ -21,7 +21,7 @@ def get_parser() -> VaultParser:
     if _parser is None:
         vault_path = os.environ.get(
             'OBSIDIAN_VAULT_PATH',
-            '/Users/marcuswong/Documents/KnowledgeVault'
+            '/data/vault'
         )
         _parser = VaultParser(vault_path)
     return _parser

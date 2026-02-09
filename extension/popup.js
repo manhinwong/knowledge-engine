@@ -15,6 +15,7 @@ const newThemeInput = document.getElementById('new-theme-input');
 const newThemeName = document.getElementById('new-theme-name');
 const createThemeBtn = document.getElementById('create-theme-btn');
 const cancelThemeBtn = document.getElementById('cancel-theme-btn');
+const graphBtn = document.getElementById('graph-btn');
 
 let currentTab = null;
 let serverUrl = 'http://localhost:8284';
@@ -55,6 +56,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Check server health and load themes
   checkServerHealth();
   loadThemes();
+});
+
+// Open knowledge graph dashboard
+graphBtn.addEventListener('click', () => {
+  chrome.tabs.create({ url: `${serverUrl}/dashboard` });
 });
 
 // Save server URL when changed

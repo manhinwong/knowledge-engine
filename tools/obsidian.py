@@ -29,7 +29,7 @@ def save_to_obsidian(
     """
     vault_path = os.environ.get(
         'OBSIDIAN_VAULT_PATH',
-        '/Users/marcuswong/Documents/KnowledgeVault'
+        '/data/vault'
     )
 
     full_path = os.path.join(vault_path, folder, filename)
@@ -76,7 +76,7 @@ def update_theme_index(theme: str, new_insight_file: str, insight_summary: str) 
     """
     vault_path = os.environ.get(
         'OBSIDIAN_VAULT_PATH',
-        '/Users/marcuswong/Documents/KnowledgeVault'
+        '/data/vault'
     )
 
     theme_folders = {
@@ -139,7 +139,7 @@ def save_to_obsidian(
     """
     vault_path = os.environ.get(
         'OBSIDIAN_VAULT_PATH',
-        '/Users/marcuswong/Documents/KnowledgeVault'
+        '/data/vault'
     )
 
     full_path = os.path.join(vault_path, folder, filename)
@@ -191,7 +191,7 @@ def update_theme_index(theme: str, new_insight_file: str, insight_summary: str) 
     """
     vault_path = os.environ.get(
         'OBSIDIAN_VAULT_PATH',
-        '/Users/marcuswong/Documents/KnowledgeVault'
+        '/data/vault'
     )
 
     theme_folders = {

@@ -29,7 +29,9 @@ app.add_middleware(
         "chrome-extension://*",
         "moz-extension://*",
         "http://localhost:*",
-        "http://127.0.0.1:*"
+        "http://127.0.0.1:*",
+        "https://knowledge-engine.fly.dev",
+        "https://*.fly.dev",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -225,7 +227,7 @@ async def create_theme(request: CreateThemeRequest):
             raise HTTPException(status_code=400, detail="Theme name cannot be empty")
 
         # Create theme folder
-        vault_path = Path(os.environ.get('OBSIDIAN_VAULT_PATH', '/Users/marcuswong/Documents/KnowledgeVault'))
+        vault_path = Path(os.environ.get('OBSIDIAN_VAULT_PATH', '/data/vault'))
 
         # Find next available number
         existing_dirs = [d.name for d in vault_path.iterdir() if d.is_dir()]

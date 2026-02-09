@@ -1,0 +1,25 @@
+app = "knowledge-engine"
+primary_region = "sjc"
+
+[build]
+
+[env]
+  PORT = "8284"
+  OBSIDIAN_VAULT_PATH = "/data/vault"
+  KNOWLEDGE_ENGINE_STATE_DIR = "/data/state"
+
+[http_service]
+  internal_port = 8284
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[mounts]
+  source = "vault_data"
+  destination = "/data"

@@ -185,6 +185,31 @@
       background: #f44336;
     }
 
+    .graph-btn {
+      background: none;
+      border: 1px solid #7c4dff;
+      color: #7c4dff;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: auto;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .graph-btn:hover {
+      background: #7c4dff;
+      color: white;
+    }
+
+    .graph-btn:disabled {
+      border-color: #ccc;
+      color: #ccc;
+      cursor: not-allowed;
+      background: none;
+    }
+
     .theme-selector {
       background: #f9f9f9;
       padding: 12px;
@@ -247,9 +272,10 @@
   </style>
 </head>
 <body>
-  <h1>
+  <h1 style="display: flex; align-items: center;">
     Knowledge Engine
     <span id="server-status" class="server-status offline"></span>
+    <button id="graph-btn" class="graph-btn" title="Open Knowledge Graph">View Graph</button>
   </h1>
 
   <div id="status-message" class="status"></div>
@@ -289,7 +315,8 @@
 
   <div class="settings">
     <label>Server URL</label>
-    <input type="text" id="server-url" value="http://localhost:8284" />
+    <!-- Change to http://localhost:8284 for local development -->
+    <input type="text" id="server-url" value="https://knowledge-engine.fly.dev" />
   </div>
 
   <script src="popup.js"></script>
