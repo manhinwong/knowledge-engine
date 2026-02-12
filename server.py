@@ -15,6 +15,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 
+from fastapi.responses import RedirectResponse
+
 from agent import KnowledgeAgent
 from fastapi.staticfiles import StaticFiles
 from dashboard.routes import router as dashboard_router
@@ -65,6 +67,12 @@ class ProcessResponse(BaseModel):
     message: str
     insights_count: Optional[int] = None
     file_path: Optional[str] = None
+
+
+@app.get("/")
+async def root():
+    """Redirect root to dashboard."""
+    return RedirectResponse(url="/dashboard")
 
 
 @app.get("/health")
