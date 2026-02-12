@@ -45,10 +45,42 @@ html, body {
     background: var(--bg-primary);
 }
 
+/* ===== DEMO BANNER ===== */
+
+.demo-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #451a03;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.demo-banner a {
+    color: #451a03;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.demo-banner a:hover {
+    color: #1c0a00;
+}
+
 .container {
     display: flex;
     width: 100%;
     height: 100vh;
+}
+
+body:has(.demo-banner[style*="display: flex"]) .container {
+    height: calc(100vh - 37px);
 }
 
 /* ===== SIDEBAR ===== */

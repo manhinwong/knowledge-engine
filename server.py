@@ -6,6 +6,7 @@ Provides REST API endpoints for processing articles and PDFs.
 
 import json
 import os
+import shutil
 import tempfile
 from pathlib import Path
 from typing import Optional
@@ -21,6 +22,7 @@ from agent import KnowledgeAgent
 from fastapi.staticfiles import StaticFiles
 from dashboard.routes import router as dashboard_router
 
+DEMO_MODE = os.environ.get("DEMO_MODE", "").lower() == "true"
 
 app = FastAPI(title="Knowledge Engine API", version="1.0.0")
 
@@ -69,6 +71,29 @@ class ProcessResponse(BaseModel):
     file_path: Optional[str] = None
 
 
+def _seed_demo_vault():
+    """Copy demo_vault/ contents into OBSIDIAN_VAULT_PATH if vault is empty or missing."""
+    vault_path = Path(os.environ.get('OBSIDIAN_VAULT_PATH', '/data/vault'))
+    demo_src = Path(__file__).parent / "demo_vault"
+    if not demo_src.exists():
+        return
+    vault_path.mkdir(parents=True, exist_ok=True)
+    has_content = any(vault_path.iterdir()) if vault_path.exists() else False
+    if not has_content:
+        shutil.copytree(str(demo_src), str(vault_path), dirs_exist_ok=True)
+        print(f"Demo vault seeded to {vault_path}")
+
+
+if DEMO_MODE:
+    _seed_demo_vault()
+
+
+@app.get("/api/config")
+async def get_config():
+    """Return app configuration flags."""
+    return {"demo_mode": DEMO_MODE}
+
+
 @app.get("/")
 async def root():
     """Redirect root to dashboard."""
@@ -111,6 +136,8 @@ async def process_content(request: ProcessRequest):
     Returns:
         ProcessResponse with status and results
     """
+    if DEMO_MODE:
+        raise HTTPException(status_code=403, detail="Demo mode: write operations disabled")
     try:
         if request.type == "url":
             # Process URL directly
@@ -175,6 +202,8 @@ async def upload_pdf(file: UploadFile = File(...), theme: Optional[str] = Form(N
     Returns:
         ProcessResponse with status and results
     """
+    if DEMO_MODE:
+        raise HTTPException(status_code=403, detail="Demo mode: write operations disabled")
     try:
         # Validate file type
         if not file.filename.endswith('.pdf'):
@@ -226,6 +255,8 @@ async def create_theme(request: CreateThemeRequest):
     Returns:
         ProcessResponse with status
     """
+    if DEMO_MODE:
+        raise HTTPException(status_code=403, detail="Demo mode: write operations disabled")
     try:
         from pathlib import Path
         from dashboard.vault_parser import VaultParser

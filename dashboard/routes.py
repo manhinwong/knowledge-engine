@@ -196,6 +196,9 @@ async def embedding_index_status():
 @router.post("/api/vault/embedding-index/build")
 async def build_embedding_index():
     """Build or rebuild the embedding index."""
+    from server import DEMO_MODE
+    if DEMO_MODE:
+        raise HTTPException(status_code=403, detail="Demo mode: write operations disabled")
     try:
         parser = get_parser()
         parser.refresh()
@@ -208,6 +211,9 @@ async def build_embedding_index():
 @router.post("/api/vault/refresh")
 async def refresh_vault():
     """Force refresh of vault parsing cache."""
+    from server import DEMO_MODE
+    if DEMO_MODE:
+        raise HTTPException(status_code=403, detail="Demo mode: write operations disabled")
     try:
         parser = get_parser()
         parser.refresh()

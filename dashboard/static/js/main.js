@@ -10,7 +10,25 @@ class KnowledgeEngineApp {
         console.log('Initializing Knowledge Engine Dashboard...');
         try {
             this.showLoading(true);
-            this.sidebar = new Sidebar();
+
+            // Fetch config to check for demo mode
+            this.demoMode = false;
+            try {
+                const configRes = await fetch('/api/config');
+                if (configRes.ok) {
+                    const config = await configRes.json();
+                    this.demoMode = config.demo_mode === true;
+                }
+            } catch (e) {
+                console.warn('Could not fetch config:', e);
+            }
+
+            if (this.demoMode) {
+                const banner = document.getElementById('demo-banner');
+                if (banner) banner.style.display = 'flex';
+            }
+
+            this.sidebar = new Sidebar(this.demoMode);
             this.viewer = new InsightViewer();
             this.graph = new KnowledgeGraph('#knowledge-graph');
             await this.initializeData();

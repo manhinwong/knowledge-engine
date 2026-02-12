@@ -1,5 +1,6 @@
 class Sidebar {
-    constructor() {
+    constructor(demoMode = false) {
+        this.demoMode = demoMode;
         this.themeNavEl = document.getElementById('theme-nav');
         this.searchInputEl = document.getElementById('search-input');
         this.searchClearEl = document.getElementById('search-clear');
@@ -23,6 +24,11 @@ class Sidebar {
         this.onThemeClick = null;
         this.onSearch = null;
         this.onRefresh = null;
+
+        if (this.demoMode) {
+            this.refreshBtnEl.style.display = 'none';
+            this.buildIndexBtnEl.style.display = 'none';
+        }
 
         this.setupEventListeners();
         this.loadIndexStatus();
@@ -72,7 +78,7 @@ class Sidebar {
                 this.semanticToggleEl.checked = true;
             } else {
                 this.indexStatusTextEl.textContent = 'Build index to enable semantic search';
-                this.buildIndexBtnEl.style.display = 'inline-block';
+                this.buildIndexBtnEl.style.display = this.demoMode ? 'none' : 'inline-block';
                 this.semanticToggleEl.checked = false;
             }
         } catch (error) {
