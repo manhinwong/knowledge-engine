@@ -198,6 +198,28 @@ Save to Obsidian as a synthesis note in 05-Cross-Theme-Synthesis/ with:
 - Wikilinks to all referenced insights""")
 
 
+@cli.command('build-index')
+def build_index():
+    """Build the semantic embedding index for vault search.
+
+    Indexes all insights in the Obsidian vault so that search_vault
+    can use semantic (meaning-based) search. Requires OBSIDIAN_VAULT_PATH
+    to be set in your environment or .env file.
+    """
+    vault_path = os.environ.get("OBSIDIAN_VAULT_PATH")
+    if not vault_path:
+        click.echo("Error: OBSIDIAN_VAULT_PATH is not set. Set it in your .env file or environment.", err=True)
+        sys.exit(1)
+
+    from dashboard.vault_parser import VaultParser
+    from dashboard.embedding_index import build_index as _build_index
+
+    click.echo(f"Building embedding index for: {vault_path}")
+    parser = VaultParser(vault_path)
+    count = _build_index(parser)
+    click.echo(f"Indexed {count} insights.")
+
+
 @cli.command()
 @click.argument('title')
 @click.argument('url')

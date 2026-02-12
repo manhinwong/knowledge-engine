@@ -105,6 +105,19 @@ class KnowledgeAgent:
                     },
                     "required": ["query"]
                 }
+            },
+            {
+                "name": "search_vault",
+                "description": "Search your Obsidian vault for insights by meaning (semantic) or keyword. Use this to ground explain, connect, and synthesize in actual saved notes. Returns insight id, title, theme, relevance score, and a short snippet.",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {"type": "string", "description": "Search query to find relevant vault insights"},
+                        "theme": {"type": "string", "description": "Optional theme to filter results"},
+                        "limit": {"type": "integer", "description": "Max results to return (default 15)"}
+                    },
+                    "required": ["query"]
+                }
             }
         ]
 
@@ -138,7 +151,61 @@ class KnowledgeAgent:
                       or query in r.get("url", "").lower()]
             return json.dumps(matches, indent=2)
 
+        elif tool_name == "search_vault":
+            return self._search_vault(tool_input)
+
         return f"Unknown tool: {tool_name}"
+
+    def _search_vault(self, tool_input: dict) -> str:
+        """Search Obsidian vault using semantic or keyword search."""
+        vault_path = os.environ.get("OBSIDIAN_VAULT_PATH")
+        if not vault_path:
+            return "OBSIDIAN_VAULT_PATH is not set; cannot search vault."
+
+        from dashboard.vault_parser import VaultParser
+        from dashboard.embedding_index import index_status, search_semantic
+
+        query = tool_input["query"]
+        theme = tool_input.get("theme")
+        limit = tool_input.get("limit", 15)
+
+        parser = VaultParser(vault_path)
+        status = index_status(parser)
+
+        if status.get("built"):
+            results = search_semantic(parser, query, theme=theme, limit=limit)
+        else:
+            raw = parser.search(query, theme=theme)[:limit]
+            results = []
+            for item in raw:
+                detail = parser.get_insight_detail(item["id"])
+                snippet = ""
+                if detail:
+                    content = detail.get("content", "")
+                    lines = [l for l in content.split("\n") if l.strip() and not l.startswith("#")]
+                    snippet = " ".join(lines)[:160].strip()
+                    if len(" ".join(lines)) > 160:
+                        snippet += "..."
+                results.append({
+                    "id": item["id"],
+                    "label": item.get("label", item["id"]),
+                    "theme": item.get("theme", "Other"),
+                    "score": None,
+                    "snippet": snippet
+                })
+
+        # Add content_excerpt for top 3 results
+        for r in results[:3]:
+            detail = parser.get_insight_detail(r["id"])
+            if detail:
+                content = detail.get("content", "")
+                lines = [l for l in content.split("\n") if l.strip()]
+                excerpt = " ".join(lines)[:600].strip()
+                if len(" ".join(lines)) > 600:
+                    excerpt += "..."
+                r["content_excerpt"] = excerpt
+
+        return json.dumps(results, indent=2)
 
     def send_message(self, user_message: str) -> str:
         """Send a message to the agent and get response."""

@@ -23,6 +23,25 @@
                     class="search-input"
                 >
                 <button id="search-clear" class="search-clear" title="Clear search">✕</button>
+                <div class="search-mode-toggle">
+                    <label class="toggle-pill">
+                        <input type="checkbox" id="semantic-toggle" checked>
+                        <span class="toggle-label">By meaning</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="search-results" class="search-results" style="display: none;">
+                <div class="search-results-header">
+                    <span id="search-results-count" class="search-results-count"></span>
+                    <span id="search-results-mode" class="search-results-mode"></span>
+                </div>
+                <div id="search-results-list" class="search-results-list"></div>
+            </div>
+
+            <div class="embedding-index-status">
+                <span id="index-status-text" class="index-status-text"></span>
+                <button id="build-index-btn" class="btn-build-index" style="display: none;">Build Index</button>
             </div>
 
             <div class="themes-section">

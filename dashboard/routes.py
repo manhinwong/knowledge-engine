@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 import markdown2
 
 from dashboard.vault_parser import VaultParser
+from dashboard.embedding_index import build_index, index_status, search_semantic
 
 
 router = APIRouter(tags=["dashboard"])
@@ -155,22 +156,51 @@ async def get_themes_summary():
 @router.get("/api/vault/search")
 async def search_insights(
     q: str = Query(...),
-    theme: Optional[str] = Query(None)
+    theme: Optional[str] = Query(None),
+    semantic: bool = Query(True),
+    limit: int = Query(25, le=100)
 ):
-    """
-    Search insights by query.
-
-    Args:
-        q: Search query
-        theme: Optional theme filter
-
-    Returns:
-        List of matching insights
-    """
+    """Search insights by query with optional semantic search."""
     try:
         parser = get_parser()
-        results = parser.search(q, theme=theme)
-        return {'results': results, 'count': len(results)}
+
+        if semantic and index_status(parser).get('built'):
+            results = search_semantic(parser, q, theme=theme, limit=limit)
+            return {'results': results, 'count': len(results), 'semantic': True}
+        else:
+            results = parser.search(q, theme=theme)[:limit]
+            formatted = []
+            for r in results:
+                formatted.append({
+                    'id': r['id'],
+                    'label': r.get('label', r['id']),
+                    'theme': r.get('theme', 'Other'),
+                    'score': None,
+                    'snippet': None
+                })
+            return {'results': formatted, 'count': len(formatted), 'semantic': False}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/api/vault/embedding-index/status")
+async def embedding_index_status():
+    """Get embedding index status."""
+    try:
+        parser = get_parser()
+        return index_status(parser)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/api/vault/embedding-index/build")
+async def build_embedding_index():
+    """Build or rebuild the embedding index."""
+    try:
+        parser = get_parser()
+        parser.refresh()
+        count = build_index(parser)
+        return {'status': 'success', 'count': count, 'message': f'Indexed {count} insights'}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

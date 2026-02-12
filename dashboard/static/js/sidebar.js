@@ -6,6 +6,13 @@ class Sidebar {
         this.refreshBtnEl = document.getElementById('refresh-btn');
         this.refreshStatusEl = document.getElementById('refresh-status');
         this.totalInsightsEl = document.getElementById('total-insights');
+        this.searchResultsEl = document.getElementById('search-results');
+        this.searchResultsListEl = document.getElementById('search-results-list');
+        this.searchResultsCountEl = document.getElementById('search-results-count');
+        this.searchResultsModeEl = document.getElementById('search-results-mode');
+        this.semanticToggleEl = document.getElementById('semantic-toggle');
+        this.buildIndexBtnEl = document.getElementById('build-index-btn');
+        this.indexStatusTextEl = document.getElementById('index-status-text');
 
         this.themes = {};
         this.selectedTheme = null;
@@ -18,6 +25,7 @@ class Sidebar {
         this.onRefresh = null;
 
         this.setupEventListeners();
+        this.loadIndexStatus();
     }
 
     setupEventListeners() {
@@ -27,6 +35,7 @@ class Sidebar {
                 this.searchClearEl.classList.add('active');
             } else {
                 this.searchClearEl.classList.remove('active');
+                this.hideSearchResults();
             }
             clearTimeout(this.searchTimeout);
             if (this.searchQuery) {
@@ -40,10 +49,55 @@ class Sidebar {
             this.searchInputEl.value = '';
             this.searchQuery = '';
             this.searchClearEl.classList.remove('active');
+            this.hideSearchResults();
             if (this.onSearch) this.onSearch(null);
         });
 
         this.refreshBtnEl.addEventListener('click', () => this.refresh());
+
+        this.semanticToggleEl.addEventListener('change', () => {
+            if (this.searchQuery) this.performSearch();
+        });
+
+        this.buildIndexBtnEl.addEventListener('click', () => this.buildIndex());
+    }
+
+    async loadIndexStatus() {
+        try {
+            const response = await fetch('/api/vault/embedding-index/status');
+            const status = await response.json();
+            if (status.built) {
+                this.indexStatusTextEl.textContent = `Semantic search ready (${status.count} notes)`;
+                this.buildIndexBtnEl.style.display = 'none';
+                this.semanticToggleEl.checked = true;
+            } else {
+                this.indexStatusTextEl.textContent = 'Build index to enable semantic search';
+                this.buildIndexBtnEl.style.display = 'inline-block';
+                this.semanticToggleEl.checked = false;
+            }
+        } catch (error) {
+            console.error('Error loading index status:', error);
+        }
+    }
+
+    async buildIndex() {
+        this.buildIndexBtnEl.disabled = true;
+        this.buildIndexBtnEl.textContent = 'Building...';
+        this.indexStatusTextEl.textContent = 'Building index...';
+        try {
+            const response = await fetch('/api/vault/embedding-index/build', { method: 'POST' });
+            const data = await response.json();
+            this.indexStatusTextEl.textContent = `Semantic search ready (${data.count} notes)`;
+            this.buildIndexBtnEl.style.display = 'none';
+            this.semanticToggleEl.checked = true;
+            if (this.searchQuery) this.performSearch();
+        } catch (error) {
+            console.error('Error building index:', error);
+            this.indexStatusTextEl.textContent = 'Error building index';
+        } finally {
+            this.buildIndexBtnEl.disabled = false;
+            this.buildIndexBtnEl.textContent = 'Build Index';
+        }
     }
 
     async loadThemes() {
@@ -89,6 +143,7 @@ class Sidebar {
         this.searchInputEl.value = '';
         this.searchQuery = '';
         this.searchClearEl.classList.remove('active');
+        this.hideSearchResults();
         document.querySelectorAll('.theme-item').forEach(el => el.classList.remove('active'));
         if (themeName === null) {
             document.querySelectorAll('.theme-item')[0].classList.add('active');
@@ -103,17 +158,73 @@ class Sidebar {
     async performSearch() {
         if (!this.searchQuery) {
             if (this.onSearch) this.onSearch(null);
+            this.hideSearchResults();
             return;
         }
         try {
-            const theme = this.selectedTheme ? `&theme=${this.selectedTheme}` : '';
-            const response = await fetch(`/api/vault/search?q=${encodeURIComponent(this.searchQuery)}${theme}`);
+            const theme = this.selectedTheme ? `&theme=${encodeURIComponent(this.selectedTheme)}` : '';
+            const semantic = this.semanticToggleEl.checked ? '&semantic=true' : '&semantic=false';
+            const response = await fetch(
+                `/api/vault/search?q=${encodeURIComponent(this.searchQuery)}${theme}${semantic}&limit=25`
+            );
             const data = await response.json();
-            this.searchResults = data.results.map(r => r.id);
-            if (this.onSearch) this.onSearch(this.searchResults);
+            this.searchResults = data.results;
+            const resultIds = data.results.map(r => r.id);
+            if (this.onSearch) this.onSearch(resultIds);
+            this.renderSearchResults(data);
         } catch (error) {
             console.error('Error searching:', error);
         }
+    }
+
+    renderSearchResults(data) {
+        this.searchResultsCountEl.textContent = `${data.count} result${data.count !== 1 ? 's' : ''}`;
+        this.searchResultsModeEl.textContent = data.semantic ? 'semantic' : 'keyword';
+        this.searchResultsListEl.innerHTML = '';
+
+        for (const result of data.results) {
+            const card = document.createElement('div');
+            card.className = 'search-result-card';
+            card.addEventListener('click', () => {
+                if (window.app) window.app.loadInsight(result.id);
+            });
+
+            let scoreHtml = '';
+            if (result.score !== null && result.score !== undefined) {
+                const pct = Math.round(result.score * 100);
+                scoreHtml = `<span class="result-score">${pct}%</span>`;
+            }
+
+            const themeColor = this.themes[result.theme]?.color || '#64748b';
+            const snippetHtml = result.snippet
+                ? `<p class="result-snippet">${this._escapeHtml(result.snippet)}</p>`
+                : '';
+
+            card.innerHTML = `
+                <div class="result-card-header">
+                    <span class="result-title">${this._escapeHtml(result.label)}</span>
+                    ${scoreHtml}
+                </div>
+                <div class="result-card-meta">
+                    <span class="result-theme-pill" style="background-color: ${themeColor}">${this._escapeHtml(result.theme)}</span>
+                </div>
+                ${snippetHtml}
+            `;
+            this.searchResultsListEl.appendChild(card);
+        }
+
+        this.searchResultsEl.style.display = 'block';
+    }
+
+    hideSearchResults() {
+        this.searchResultsEl.style.display = 'none';
+        this.searchResultsListEl.innerHTML = '';
+    }
+
+    _escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     async refresh() {
@@ -123,7 +234,7 @@ class Sidebar {
         try {
             await fetch('/api/vault/refresh', { method: 'POST' });
             if (window.app) await window.app.initializeData();
-            this.refreshStatusEl.textContent = 'Refreshed ✓';
+            this.refreshStatusEl.textContent = 'Refreshed';
             this.refreshStatusEl.classList.add('success');
             setTimeout(() => {
                 this.refreshStatusEl.textContent = '';

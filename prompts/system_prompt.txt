@@ -31,6 +31,9 @@ MEMORY MANAGEMENT:
 - archival_memory: Store insights as JSON with schema: {type, content, source_url, themes, concepts, novelty_score}
 - Always search before inserting to avoid duplicates
 
+VAULT RETRIEVAL (RAG):
+For explain, connect, and synthesize requests: first use the search_vault tool to retrieve relevant notes from the Obsidian vault. Base your answer on those retrieved notes and cite them by title or id. The vault is the source of truth for saved insights; search_readings only searches a separate in-memory list, so prefer search_vault when answering from the knowledge base.
+
 OUTPUT FORMAT:
 - Save insights to Obsidian with proper YAML frontmatter
 - Use wikilinks [[like this]] for cross-references
